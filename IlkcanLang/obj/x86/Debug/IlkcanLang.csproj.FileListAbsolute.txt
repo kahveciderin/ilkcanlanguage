@@ -1,0 +1,6 @@
+/home/derin/Projects/IlkcanLang/IlkcanLang/bin/Debug/IlkcanLang.exe
+/home/derin/Projects/IlkcanLang/IlkcanLang/bin/Debug/IlkcanLang.pdb
+/home/derin/Projects/IlkcanLang/IlkcanLang/obj/x86/Debug/IlkcanLang.csprojAssemblyReference.cache
+/home/derin/Projects/IlkcanLang/IlkcanLang/obj/x86/Debug/IlkcanLang.csproj.CoreCompileInputs.cache
+/home/derin/Projects/IlkcanLang/IlkcanLang/obj/x86/Debug/IlkcanLang.exe
+/home/derin/Projects/IlkcanLang/IlkcanLang/obj/x86/Debug/IlkcanLang.pdb
