@@ -11,6 +11,7 @@ using System.Windows;
 using System.Linq.Expressions;
 using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 using Microsoft.CSharp;
 using System.CodeDom.Compiler;
@@ -21,53 +22,83 @@ namespace IlkcanLang
     {
 
         static string csprj = String.Empty;
+        static bool deletetempfile = true;
+        static string segfaulttext = "\"Segmentation Fault\"";
+
+        static Stopwatch watch = new Stopwatch();
+        static Stopwatch eachwatch = new Stopwatch();
         static List<List<string>> lexiled = new List<List<string>>();
         public static void Main(string[] args)
         {
 
 
-            var watch = new System.Diagnostics.Stopwatch();
-
             watch.Start();
 
-            Console.WriteLine("IlkcanLang Compiler v1.0\n\n\n\tIlkcanLang Compiler comes with absolutely NO WARRANTY,\n\tto the extent permitted by applicable law\n" +
-            	"\n\nInput file: "+args[0]+"\n" +"Output file: Program.exe\n"+
-            	"Including dependencies...");
-            csprj += "using System;\nusing System.Collections;\nusing System.Collections.Generic;\nnamespace Program\n{\n\tpublic class MainClass\n\t{\n\t\tpublic static void Main(string[] args)\n\t\t{\n\t\t\t\n";
-            Console.WriteLine("Adding lists...");
-            lexiled.Add(new List<string>());
-            lexiled.Add(new List<string>());
-            Console.WriteLine("Reading file...");
-            try { 
-            Lexile(File.ReadAllText(args[0]));
-            Console.WriteLine("Creating code...");
-            Interpret();
-            Console.WriteLine("Finalizing code...");
-            csprj += "\n\t\t}\n\t}\n}";
-            Console.WriteLine("Writing code to file...");
-            File.WriteAllText("csprj.cs", csprj);
+            try
+            {
+            Console.Write("IlkcanLang Compiler v1.0\n\n\n\tIlkcanLang Compiler comes with absolutely NO WARRANTY,\n\tto the extent permitted by applicable law\n" +
+            "\n\nInput file: "); 
+            Console.Write(args[0]+"\n" +"Output file: Program.exe\n"+
+            "Including dependencies...");
 
-            Console.WriteLine("Initalizing compiler...");
-            var csc = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } });
-            Console.WriteLine("Generating parameters...");
-            var parameters = new CompilerParameters(new[] { "mscorlib.dll", "System.Core.dll" }, "Program.exe", true);
+                eachwatch.Restart();
+                csprj += "using System;\nusing System.Collections;\nusing System.Collections.Generic;\nusing System.IO;\nnamespace Program\n{\n\tpublic class MainClass\n\t{\n\t\tpublic static void Main(string[] args)\n\t\t{\n\t\t\t\n\t\t\ttry{\n\n";
+            Console.Write(" DONE! {0}ms\nAdding lists...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                lexiled.Add(new List<string>());
+            lexiled.Add(new List<string>());
+            Console.Write(" DONE! {0}ms\nReading file...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                Lexile(File.ReadAllText(args[0]));
+            Console.Write(" DONE! {0}ms\nCreating code...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                Interpret();
+            Console.Write(" DONE! {0}ms\nFinalizing code...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                csprj += "\n\t\t\t}catch{\n\n\t\t\t\tConsole.WriteLine("+segfaulttext+");\n\n\t\t\t}\n\t\t}\n\t}\n}";
+            Console.Write(" DONE! {0}ms\nWriting code to file...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                File.WriteAllText("csprj.cs", csprj);
+
+            Console.Write(" DONE! {0}ms\nInitalizing compiler...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                var csc = new CSharpCodeProvider(new Dictionary<string, string>() { { "CompilerVersion", "v3.5" } });
+            Console.Write(" DONE! {0}ms\nGenerating parameters...", eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                var parameters = new CompilerParameters(new[] { "mscorlib.dll", "System.Core.dll" }, "Program.exe", true);
             parameters.GenerateExecutable = true;
-            Console.WriteLine("Compiling...");
-            CompilerResults results = csc.CompileAssemblyFromSource(parameters,csprj);
-            Console.WriteLine("Deleting temp file...\n");
-            File.Delete("csprj.cs");
-            Console.WriteLine("Looking for errors...\n");
-            results.Errors.Cast<CompilerError>().ToList().ForEach(error => Console.WriteLine(error.ErrorText));
-            Console.WriteLine("\n\n");
-            if(results.Errors.Cast<CompilerError>().ToList().Count > 0)
-            {
-                Console.WriteLine("Compiler exitted with {0} error(s).", results.Errors.Cast<CompilerError>().ToList().Count);
-                Console.WriteLine("Compiling FAILED! Time elapsed: {0}ms",watch.ElapsedMilliseconds);
-            }
-            else
-            {
-                Console.WriteLine("DONE! Time elapsed: {0}ms", watch.ElapsedMilliseconds);
-            }
+            Console.Write(" DONE! {0}ms\nCompiling...", eachwatch.ElapsedMilliseconds);
+                File.Delete("Program.exe");
+                eachwatch.Restart();
+                CompilerResults results = csc.CompileAssemblyFromSource(parameters,csprj);
+                if (deletetempfile)
+                {
+
+                    Console.Write(" DONE! {0}ms\nDeleting temp file...\n", eachwatch.ElapsedMilliseconds);
+                    eachwatch.Restart();
+                    File.Delete("csprj.cs");
+                }
+                Console.Write(" DONE! {0}ms\nLooking for errors...",eachwatch.ElapsedMilliseconds);
+                eachwatch.Restart();
+                results.Errors.Cast<CompilerError>().ToList().ForEach(error => Console.WriteLine(error.ErrorText));
+            //Console.WriteLine("\n\n");
+
+                Console.WriteLine(" DONE! {1}ms\n\n\nCompiler exitted with {0} error(s).", results.Errors.Cast<CompilerError>().ToList().Count, eachwatch.ElapsedMilliseconds);
+
+
+                if (File.Exists("Program.exe"))
+                {
+                    Console.WriteLine("\n\n\nTotal time elapsed: {0}ms", watch.ElapsedMilliseconds);
+
+                }
+                else
+                {
+
+                    Console.WriteLine("Compiling FAILED! Total time elapsed: {0}ms", watch.ElapsedMilliseconds);
+                }
+            
+          
+               
             }
             catch
             {
@@ -112,13 +143,15 @@ namespace IlkcanLang
             for (i = 0; i < llength; i++)
             {
 
-                csprj += "\t\t\t";
+                csprj += "\t\t\t\t";
                 List<List<string>> line = part[i];
 
                 string csline = String.Empty;
                 string cache = String.Empty;
 
                 bool isnumvar = false;
+                bool istxtsend = false;
+                bool ignline = false;
                 for (a = 0; a < line[0].Count; a++)
                 {
                     string def = line[0][a];
@@ -146,9 +179,17 @@ namespace IlkcanLang
                                     csline +=  "Console.ReadLine()";
                                 }
                             }
-                            else if (cmd == ";")
+                            else if (cmd == ",")
                             {
                                 csline += " + ";
+                            } else if(cmd == ":")
+                            {
+                                csline += "File.ReadAllText(";  isnumvar = true;
+                            }
+                            else if (cmd == ";")
+                            {
+                                cache = csline;
+                                csline = "File.WriteAllText("; istxtsend = true;
                             }
                             break;
                         case "VAR":
@@ -239,14 +280,31 @@ namespace IlkcanLang
                                     break;
                             }
                             break;
+                        case "REG":
+                            switch (cmd)
+                            {
+                                case "!":
+                                    ignline = true;
+                                    deletetempfile = false;
+                                    break;
+                                case "+":
+                                    ignline = true;
+                                    segfaulttext = csline;
+                                    break;
+                            }
+                            break;
                     }
 
 
                 }
-                if(isnumvar)
-                csprj += csline + "+\"\");\n";
+                if (ignline)
+                    csprj = csprj.Substring(0, csprj.Length - 4);
+                else if (isnumvar)
+                    csprj += csline + "+\"\");\n";
+                else if (istxtsend)
+                    csprj += csline + "," + cache + ");\n";
                 else
-                csprj += csline + ";\n";
+                    csprj += csline + ";\n";
             }
 
 
@@ -257,7 +315,8 @@ namespace IlkcanLang
 
         static void Lexile(string code)
         {
-            Console.WriteLine("Lexiling...");
+            Console.Write(" DONE! {0}ms\nLexiling...", eachwatch.ElapsedMilliseconds);
+            eachwatch.Restart();
             List<List<string>> codeparsed = new List<List<string>>();
             foreach (var items in Regex.Split(code, "\n"))
             {
@@ -276,7 +335,7 @@ namespace IlkcanLang
                     else if (Regex.IsMatch(item, "^\\.$")) lexadd("EOL", item);
                     else if (Regex.IsMatch(item, "^[\\[\\]\\(\\)\\{\\}]$")) lexadd("PAR", item);
                     else if (Regex.IsMatch(item, "^#.*$")) lexadd("CMT", item);
-                    else if (Regex.IsMatch(item, "^[+\\-*\\/%&|\\^!]$")) lexadd("MATH", item);
+                    else if (Regex.IsMatch(item, "^[+\\-*\\/%&|\\^!]$")) lexadd("REG", item);
                     else lexadd("CMD", item);
 
                 }
